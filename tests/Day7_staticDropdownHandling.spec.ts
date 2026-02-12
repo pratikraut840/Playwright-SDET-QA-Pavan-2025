@@ -1,3 +1,7 @@
+// Day7: Actions | Static Dropdowns | Select Options | Part1
+// Single select dropdown (static dropdown)
+
+
 /**
  * Test Suite: Dropdown validations using Playwright
  * Website: https://testautomationpractice.blogspot.com/
