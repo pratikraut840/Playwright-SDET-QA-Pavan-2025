@@ -1,6 +1,6 @@
 {
   "name": "playwright-sdet-qa-pavan-2025",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {},
@@ -10,6 +10,6 @@
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
-    "@types/node": "^25.2.1"
+    "@types/node": "^25.2.3"
   }
 }
