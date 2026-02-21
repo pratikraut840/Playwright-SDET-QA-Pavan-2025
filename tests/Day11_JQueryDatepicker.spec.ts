@@ -14,47 +14,153 @@
 3.	Check the condition if future date is passed in function then click on next month button else click on past month button
 */
 
-import { test, expect, Locator } from '@playwright/test';
-
-test('Verify JQuery date picker', async ({ page }) => {
+import { test, expect, Locator, Page } from '@playwright/test';
+/*
+Test 1: Verify basic JQuery date picker selection
+Select a past date using the calendar UI.
+*/
+test('Verify JQuery date picker 1', async ({ page }) => {
+    // 1. Navigate to the test page
     await page.goto("https://testautomationpractice.blogspot.com/");
+
+    // 2. Locate the JQuery date picker input field and ensure it's visible
     const datePicker: Locator = page.locator("#datepicker");
     await expect(datePicker).toBeVisible();
+
+    // Click to open the date picker
     await datePicker.click();
 
+    // 3. Locate navigation buttons for months
     const nextMonthButton: Locator = page.locator(".ui-datepicker-next");
     const prevMonthButton: Locator = page.locator(".ui-datepicker-prev");
 
-    const targetYear: string = '2028';
+    // 4. Set target date to select
+    const targetYear: string = '2000';
     const targetMonth: string = 'May';
     const targetDay: string = '20';
 
-    let moveCalendar:boolean=true;
-
+    // 5. Navigate calendar until target month/year is displayed
+    let moveCalendar = true;
     while (moveCalendar) {
+        const currentYearText = await page.locator(".ui-datepicker-year").textContent();
+        const currentMonthText = await page.locator(".ui-datepicker-month").textContent();
 
-        const currentYear: Locator = page.locator(".ui-datepicker-year");
-        const currentMonth: Locator = page.locator(".ui-datepicker-month");
-
-        const currentYearText = await currentYear.textContent();
-        const currentMonthText = await currentMonth.textContent()
-
-
+        // Stop looping if target month and year is found
         if (currentMonthText === targetMonth && currentYearText === targetYear) {
-            moveCalendar=false;
+            moveCalendar = false;
             break;
         }
 
-        await nextMonthButton.click();
+        // Click previous month to navigate back in time
+        await prevMonthButton.click();
     }
-        const allDates: Locator[] = await page.locator(".ui-datepicker-calendar td").all();
 
-        for (let date of allDates) {
-            const getDate = await date.innerText();
+    // 6. Select the target day
+    const allDates: Locator[] = await page.locator(".ui-datepicker-calendar td:not(.ui-datepicker-other-month)").all();
+    for (let date of allDates) {
+        if ((await date.innerText()) === targetDay) {
+            await date.click();
+            break;
+        }
+    }
 
-            if (getDate === targetDay) {
-                await date.click();
+    // Wait briefly to observe selection
+    await page.waitForTimeout(3000);
+});
+
+
+/* 
+Test 2: Use a reusable common function to select any date
+Supports both past and future dates dynamically.
+*/
+test('Verify date picker using common function', async ({ page }) => {
+    // Navigate to the test page
+    await page.goto("https://testautomationpractice.blogspot.com/");
+
+    // Define the target date
+    const targetYear: string = '2050';
+    const targetMonth: string = 'May';
+    const targetDay: string = '20';
+
+    async function selectDate(year: string, month: string, day: string, page: Page, isFuture: boolean) {
+        // Open the date picker input
+        const datePicker = page.locator("#datepicker");
+        await datePicker.click();
+
+        // Locate month navigation buttons
+        const nextMonthButton = page.locator(".ui-datepicker-next");
+        const prevMonthButton = page.locator(".ui-datepicker-prev");
+
+        // Navigate to the target month/year
+        let moveCalendar = true;
+        while (moveCalendar) {
+            const currentYearText = await page.locator(".ui-datepicker-year").textContent();
+            const currentMonthText = await page.locator(".ui-datepicker-month").textContent();
+
+            if (currentMonthText === month && currentYearText === year) {
+                moveCalendar = false;
+                break;
+            }
+
+            // Click next or previous month based on isFuture
+            if (isFuture) {
+                await nextMonthButton.click();
+            } else {
+                await prevMonthButton.click();
             }
         }
 
-})
+        // Select the target day from current month
+        const allDates = await page.locator(".ui-datepicker-calendar td:not(.ui-datepicker-other-month)").all();
+        for (let date of allDates) {
+            if ((await date.innerText()) === day) {
+                await date.click();
+                break;
+            }
+        }
+    }
+
+    // Call the common function to select the target date
+    await selectDate(targetYear, targetMonth, targetDay, page, true);
+
+    await page.waitForTimeout(3000);
+});
+
+
+/* 
+Test 3: Handle another date picker input (#txtDate)
+This demonstrates selecting a future date using a second date picker field.
+*/
+test('Verify JQuery date picker 2', async ({ page }) => {
+    await page.goto("https://testautomationpractice.blogspot.com/");
+
+    // Click to open the second date picker input
+    await page.locator("#txtDate").click();
+
+    // Locate the month and year dropdowns (if they are <select> elements)
+    const selectMonth: Locator = page.locator(".ui-datepicker-month");
+    const selectYear: Locator = page.locator(".ui-datepicker-year");
+
+    // All date cells in the calendar
+    const selectDate: Locator[] = await page.locator(".ui-datepicker-calendar td:not(.ui-datepicker-other-month)").all();
+
+    // Define target date
+    const targetYear: string = "2035";
+    const targetMonth: string = "Aug";
+    const targetDate: string = "25";
+
+    // Loop through the dates and select the matching day
+    for (let date of selectDate) {
+        if ((await date.innerText()) === targetDate) {
+            // Select month and year if dropdowns exist
+            await selectMonth.selectOption(targetMonth);
+            await selectYear.selectOption(targetYear);
+
+            // Click the target date
+            await date.click();
+            break;
+        }
+    }
+
+    await page.waitForTimeout(3000);
+});
