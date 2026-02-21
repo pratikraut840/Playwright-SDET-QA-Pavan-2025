@@ -19,6 +19,3 @@ test("validate page title", async ({ page }) => {
   // Validate that the page title is exactly "OrangeHRM"
   await expect(page).toHaveTitle("OrangeHRM");
 });
-
-
-// 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
