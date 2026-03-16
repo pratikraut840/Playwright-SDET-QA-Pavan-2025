@@ -114,14 +114,14 @@ test('Verify window handling', async () => {
     console.log("Total pages/windows :", totalPages);
 
     // Access first window (original page)
-    const window1:Page = allWindowPages[0];
+    const window1:Page|void = allWindowPages[0];
     if (window1) {
         console.log("Window1 Title :", await window1.title());
         console.log("URL of the Window1", window1.url());
     }
 
     // Access second window (popup window)
-    const window2:Page = allWindowPages[1];
+    const window2:Page|void = allWindowPages[1];
     if (window2) {
         console.log("Window2 Title :", await window2.title());
         console.log("URL of the Window2", window2.url());
